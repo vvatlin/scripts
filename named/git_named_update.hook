@@ -6,6 +6,7 @@
 # the main idea taken from puppet update hook: 
 #	http://projects.puppetlabs.com/projects/1/wiki/Puppet_Version_Control
 # Setup: move this script to <repo>.git/hooks/update
+#	All zone files need to be in the form: <domain.com>.zone
 
 NOBOLD="\033[0m"
 BOLD="\033[1m"
