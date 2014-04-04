@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zabbix_export>
+    <version>2.0</version>
+    <date>2014-04-04T16:17:15Z</date>
+    <groups>
+        <group>
+            <name>Templates</name>
+        </group>
+    </groups>
+    <templates>
+        <template>
+            <template>Template PostgreSQL replication</template>
+            <name>Template PostgreSQL replication</name>
+            <groups>
+                <group>
+                    <name>Templates</name>
+                </group>
+            </groups>
+            <applications/>
+            <items>
+                <item>
+                    <name>Check PG replication lag</name>
+                    <type>0</type>
+                    <snmp_community/>
+                    <multiplier>0</multiplier>
+                    <snmp_oid/>
+                    <key>check_pgreplication</key>
+                    <delay>300</delay>
+                    <history>60</history>
+                    <trends>90</trends>
+                    <status>0</status>
+                    <value_type>3</value_type>
+                    <allowed_hosts/>
+                    <units/>
+                    <delta>0</delta>
+                    <snmpv3_contextname/>
+                    <snmpv3_securityname/>
+                    <snmpv3_securitylevel>0</snmpv3_securitylevel>
+                    <snmpv3_authprotocol>0</snmpv3_authprotocol>
+                    <snmpv3_authpassphrase/>
+                    <snmpv3_privprotocol>0</snmpv3_privprotocol>
+                    <snmpv3_privpassphrase/>
+                    <formula>0</formula>
+                    <delay_flex/>
+                    <params/>
+                    <ipmi_sensor/>
+                    <data_type>0</data_type>
+                    <authtype>0</authtype>
+                    <username/>
+                    <password/>
+                    <publickey/>
+                    <privatekey/>
+                    <port/>
+                    <description/>
+                    <inventory_link>0</inventory_link>
+                    <applications/>
+                    <valuemap/>
+                </item>
+            </items>
+            <discovery_rules/>
+            <macros>
+                <macro>
+                    <macro>{$LAG_THRESHOLD}</macro>
+                    <value>10</value>
+                </macro>
+            </macros>
+            <templates/>
+            <screens/>
+        </template>
+    </templates>
+    <triggers>
+        <trigger>
+            <expression>{Template PostgreSQL replication:check_pgreplication.last(0)}&gt;{$LAG_THRESHOLD}</expression>
+            <name>PostgreSQL replication lag</name>
+            <url/>
+            <status>0</status>
+            <priority>4</priority>
+            <description>Проверяет lag репликации, на больших тяжелых insert'ах или update'ах  может срабатывать. Lag измеряется в мегабайтах. &#13;
+Проверить быстро что репликация работает:&#13;
+ps aux | grep streaming&#13;
+На мастере будет  wal sender process postgres  и число вида: streaming 2/652C55F0&#13;
+На slave будет: postgres: wal receiver process   streaming 2/652C55F0 если это число на slave меняется - то более менее все ок, репликация работает.</description>
+            <type>0</type>
+            <dependencies/>
+        </trigger>
+    </triggers>
+</zabbix_export>
