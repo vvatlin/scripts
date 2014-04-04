@@ -58,13 +58,21 @@ def main(argv):
 
 	try:
 		opts, args = getopt.getopt(argv,'',['master_ip=', 'master_user=','master_passwd=',\
-						'standby_ip=', 'standby_user=', 'standby_passwd='])
+						'standby_ip=', 'standby_user=', 'standby_passwd=',\
+						'help'])
 	except getopt.GetoptError:
-		print 'test.py -i <inputfile> -o <outputfile>'
+		print ''
 		sys.exit(2)
 	for opt, arg in opts:
 		if opt == '--help':
-			print 'test.py -i <inputfile> -o <outputfile>'
+			print 'check_pgreplication.py \n\
+			--master_ip=<master ip-address> \n\
+			--master_user=<username> \n\
+			--master_passwd=<password> \n\
+			--standby_ip=<standby ip-address> \n\
+			--standby_user=<username> \n\
+			--standby_passwd=<password>'
+			print 'standby username and password can be omitted if it is the same as master username and password'
 			sys.exit()
 		elif opt in ("--master_ip="):
 			master_ip = arg
