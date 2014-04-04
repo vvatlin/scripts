@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 # Writen by Vadim Vatlin <vvvvatlin@gmail.com>
 # Description:
 #	Calculate lag between master and standby servers.
@@ -10,39 +10,34 @@
 #	Setup:
 #		RPM based: yum install python-psycopg2
 
+import sys, getopt
 import psycopg2
 
-# variables
-# TODO: use getopt module
+# global variables
 db_name = 'postgres'
-db_user = 'set db user'
-db_pass = 'set db password'
+MASTER_TYPE="MASTER"
+STANDBY_TYPE="STANDBY"
 
-master = 'set master server ip or fqdn'
-standby = 'set master server ip or fqdn'
-
-# in megabytes
-lag_alert = '1'
-
-def get_wal_pos(hostname, type):
-	conn = psycopg2.connect(database=db_name, user=db_user, password=db_pass, host=hostname)
+def get_wal_pos(hostname, user, passwd, type):
+	conn = psycopg2.connect(database=db_name, user=user, password=passwd, host=hostname)
 	cur = conn.cursor()
 
-	if type == 'master':
+	if type == MASTER_TYPE:
 		cur.execute("select pg_current_xlog_location()")
-	elif type == 'standby':
+	elif type == STANDBY_TYPE:
 		cur.execute("select pg_last_xlog_replay_location()")
 	else:
 		return -1
-	wal_pos = cur.fetchone()[0]
+
+	wal_position = cur.fetchone()[0]
 
 	cur.close()
 	conn.close()
 
-	return wal_pos
+	return wal_position
 
-def get_wal_seg_size(hostname):
-        conn = psycopg2.connect(database=db_name, user=db_user, password=db_pass, host=hostname)
+def get_wal_segment_size(hostname, user, passwd):
+        conn = psycopg2.connect(database=db_name, user=user, password=passwd, host=hostname)
 	cur = conn.cursor()
 
 	cur.execute("show wal_segment_size")
@@ -53,12 +48,52 @@ def get_wal_seg_size(hostname):
 
 	return segment_size
 
-# get wal position
-m_segment, m_segment_offset = get_wal_pos(master, 'master').split('/')
-s_segment, s_segment_offset = get_wal_pos(standby, 'standby').split('/')
+def main(argv):
+	master_ip = None
+	standby_ip = None
+	master_user = None
+	master_passwd = None
+	standby_user = None  
+	standby_passwd = None
 
-# get wal segment size, usually 16M
-segment_size = get_wal_seg_size(master)[:-2]
+	try:
+		opts, args = getopt.getopt(argv,'',['master_ip=', 'master_user=','master_passwd=',\
+						'standby_ip=', 'standby_user=', 'standby_passwd='])
+	except getopt.GetoptError:
+		print 'test.py -i <inputfile> -o <outputfile>'
+		sys.exit(2)
+	for opt, arg in opts:
+		if opt == '--help':
+			print 'test.py -i <inputfile> -o <outputfile>'
+			sys.exit()
+		elif opt in ("--master_ip="):
+			master_ip = arg
+		elif opt in ("--standby_ip="):
+			standby_ip = arg
+		elif opt in ("--master_user="):
+			master_user = arg
+		elif opt in ("--master_passwd="):
+			master_passwd = arg
+		elif opt in ("--standby_user="):
+			standby_user = arg
+		elif opt in ("--standby_passwd="):
+			standby_passwd = arg
 
-# calculate lag in megabytes
-print (int(m_segment,16) - int(s_segment,16)) * int(segment_size) + (int(m_segment_offset,16) - int(s_segment_offset,16)).__abs__() / 1024 / 1024
+		if (standby_user is None) or (standby_passwd is None):
+			standby_user = master_user
+			standby_passwd = master_passwd
+
+	# get WAL file position on master and stadby
+	m_segment, m_segment_offset = get_wal_pos(master_ip, master_user, master_passwd, MASTER_TYPE).split('/')
+	s_segment, s_segment_offset = get_wal_pos(standby_ip, standby_user, standby_passwd, STANDBY_TYPE).split('/')
+
+	# get wal segment size, usually 16M
+	segment_size = get_wal_segment_size(master_ip, master_user, master_passwd)[:-2]
+
+	# calculate lag in megabytes
+	lag = (int(m_segment,16) - int(s_segment,16)) * int(segment_size) + (int(m_segment_offset,16) - int(s_segment_offset,16)).__abs__() / 1024 / 1024
+
+	print lag
+
+if __name__ == "__main__":
+	main(sys.argv[1:])
