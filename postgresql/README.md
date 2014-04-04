@@ -2,7 +2,7 @@
 2. Install psycopg2 python module
 
 3. Write down to zabbix_agentd.conf <br/>
-UserParameter=check_pgreplication,/etc/zabbix/scripts/check_pgreplication.py --master_ip=<ip> --standby_ip=<ip> --master_user=<user> --master_passwd=<pass>
+UserParameter=check_pgreplication,/etc/zabbix/scripts/check_pgreplication.py --master_ip=\<ip\> --standby_ip=\<ip\> --master_user=\<user\> --master_passwd=\<pass\>
 
 4. Write down to master and standby pg_hba.conf <br/>
 host    postgres        replmon           0.0.0.0/0               md5
